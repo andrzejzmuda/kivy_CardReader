@@ -1,0 +1,36 @@
+#:kivy 1.11.1
+WindowManager:
+    MainWindow:
+    SecondWindow:
+
+<MainWindow>:
+    card: card
+    name: "main"
+    BoxLayout:
+        orientation: "vertical"
+
+        TextInput:
+            id: card
+            focus: True
+            text: ''
+            width: '100'
+            font_size: 60
+            multiline: False
+            password: True
+            on_text_validate:
+                root.manager.transition.direction = "left"
+
+        Label:
+            id: cardLabel
+            text: 'card'
+
+
+<SecondWindow>:
+    name: "second"
+    on_enter:
+        app.root.current = "main"
+        root.manager.get_screen("main").ids["card"].focus = True
+        root.manager.transition.direction = "right"
+
+    Label:
+        text: "ok"
