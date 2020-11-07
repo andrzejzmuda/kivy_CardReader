@@ -3,7 +3,7 @@ from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.button import Button
 from kivy.core.window import Window
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
 import psycopg2
 import pendulum
 import datetime
@@ -19,12 +19,14 @@ local_tz = pendulum.timezone("Europe/Warsaw")
 conn_source = psycopg2.connect(host="", database="timeregistry", user="admin",
                         password="")
 
+
 class MainWindow(Screen):
     card = ObjectProperty(None)
-    eventName = ObjectProperty(None)
+    # eventName = StringProperty('') #TODO: make 'event' a global var
 
     def __init__(self, **kwargs):
-        super(MainWindow, self).__init__(**kwargs)
+        super().__init__(**kwargs)
+        self.event = ''
         Window.bind(on_key_down=self._on_keyboard_down)
 
     def _on_keyboard_down(self, instance, keyboard, keycode, text, modifiers):
@@ -46,8 +48,8 @@ class MainWindow(Screen):
             if list(answer)[3]:
                 cur.execute(sql_new, (card, datetime.datetime.now(), None, False))
                 conn_source.commit()
-                print(list(answer)[0], list(answer)[1], list(answer)[2], list(answer)[3]) # create new -> entry
-                eventName = 'entry'
+                # print(list(answer)[0], list(answer)[1], list(answer)[2], list(answer)[3]) # create new -> entry
+                self.event = 'entry'
             else:
                 update_id = list(answer)[0]
                 leaving_time = str(datetime.datetime.now())
@@ -56,19 +58,22 @@ class MainWindow(Screen):
                     .format(leaving_time, update_id), (('leaving_time', leaving_time), ('update_id', update_id))
                 )
                 conn_source.commit()
-                eventName = 'leave'
+                self.event = 'leave'
         else:
             cur.execute(sql_new, (card, datetime.datetime.now(), None, False))
             conn_source.commit()
-            eventName  = 'entry new'
+            self.event  = 'entry new'
         cur.close()
-        print(eventName)
+        # global event
+        # event = eventName
+        # print(self.event)
         self.card.text = ""
         self.card.focus = True
         self.changeScreen()
         return self.__init__
 
     def changeScreen(self):
+        print(self.event)
         if self.manager.current == 'main':
             self.manager.current = 'second'
             self.manager.transition.direction = 'left'
